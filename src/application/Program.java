@@ -24,5 +24,11 @@ public class Program {
             System.out.println(obj);
         }
         //all sellers point to the same department object
+
+        System.out.println("\n=== TEST 3: seller findAll ===");
+        list = sellerDao.findAll();
+        for (Seller obj : list){
+            System.out.println(obj);
+        }
     }
 }
