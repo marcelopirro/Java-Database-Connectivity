@@ -53,17 +53,9 @@ public class SellerDaoJDBC implements SellerDao{
             st.setInt(1, id); //receives the parameter
             rs = st.executeQuery();
             if (rs.next()) { //checks whether the query contains any records
-                Department dep = new Department();
-                dep.setId(rs.getInt("DepartmentId")); //Picks up the Department Id 
-                dep.setName(rs.getString("DepName")); //Picks up the Department Name 
+                Department dep = instantiateDepartment(rs); //calls the function to intent the department
 
-                Seller obj = new Seller(); //Creating the seller object based on table data
-                obj.setId(rs.getInt("Id"));
-                obj.setName(rs.getString("Name"));
-                obj.setEmail(rs.getString("Email"));
-                obj.setBaseSalary(rs.getDouble("BaseSalary"));
-                obj.setBirthDate(rs.getDate("BirthDate"));
-                obj.setDepartment(dep); //Department will be the object created
+                Seller obj = instantiateSeller(rs, dep); //calls the function to intent the seller
                 return obj;
             }
             return null;
@@ -77,6 +69,27 @@ public class SellerDaoJDBC implements SellerDao{
         }
 
         
+    }
+
+
+    //Helper Method
+    private Seller instantiateSeller(ResultSet rs, Department dep) throws SQLException{ //propagates the exception because it is already being handled
+        Seller obj = new Seller(); //Creating the seller object based on table data
+        obj.setId(rs.getInt("Id"));
+        obj.setName(rs.getString("Name"));
+        obj.setEmail(rs.getString("Email"));
+        obj.setBaseSalary(rs.getDouble("BaseSalary"));
+        obj.setBirthDate(rs.getDate("BirthDate"));
+        obj.setDepartment(dep); //Department will be the object created
+        return obj;
+    }
+
+    //Helper Method
+    private Department instantiateDepartment(ResultSet rs) throws SQLException { //propagates the exception because it is already being handled
+        Department dep = new Department();
+        dep.setId(rs.getInt("DepartmentId")); //Picks up the Department Id 
+        dep.setName(rs.getString("DepName")); //Picks up the Department Name 
+        return dep;
     }
 
     @Override
