@@ -4,7 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import db.DB;
 import db.DbException;
@@ -74,7 +77,7 @@ public class SellerDaoJDBC implements SellerDao{
 
     //Helper Method
     private Seller instantiateSeller(ResultSet rs, Department dep) throws SQLException{ //propagates the exception because it is already being handled
-        Seller obj = new Seller(); //Creating the seller object based on table data
+        Seller obj = new Seller(); //Creating the seller 
         obj.setId(rs.getInt("Id"));
         obj.setName(rs.getString("Name"));
         obj.setEmail(rs.getString("Email"));
@@ -96,6 +99,51 @@ public class SellerDaoJDBC implements SellerDao{
     public List<Seller> findAll() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'findAll'");
+    }
+
+    @Override
+    public List<Seller> findByDepartment(Department department) { //Selects all salespeople in a given department
+        PreparedStatement st = null;
+        ResultSet rs = null;
+        try{
+            st = conn.prepareStatement(
+                "SELECT seller.*,department.Name as DepName "
+                + "FROM seller INNER JOIN department "
+                + "ON seller.DepartmentId = department.Id "
+                + "WHERE DepartmentId = ? "
+                + "ORDER BY Name");
+
+            st.setInt(1, department.getId()); //receives the parameter
+            rs = st.executeQuery();
+
+            List<Seller> list = new ArrayList<>();
+
+            //Controlling the non-repetition of the department using MAP
+            Map<Integer, Department> map = new HashMap<>();
+
+            while (rs.next()) { //checks whether the query contains any records
+                
+                Department dep = map.get(rs.getInt("DepartmentId")); 
+                /*Using the created map, any instantiated department will be saved, 
+                so it is tested if the department already exists before creating a new one */
+
+                if (dep == null){ //If it does not exist it will be created
+                    dep = instantiateDepartment(rs); //calls the function to intent the department
+                    map.put(rs.getInt("DepartmentId"), dep); //save in Map
+                }
+                
+                Seller obj = instantiateSeller(rs, dep); //calls the function to intent the seller
+                list.add(obj);
+            }
+            return list;
+        }
+        catch (SQLException e){
+            throw new DbException(e.getMessage());
+        }
+        finally {
+            DB.closeStatement(st);
+            DB.closeResultSet(rs);
+        }
     }
 
     
